@@ -1,22 +1,18 @@
 FROM golang:1.24-alpine AS build
 
-WORKDIR /go/src/github.com/scottyc/webapp
+WORKDIR /app
 
-COPY web.go web.go
+COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o ./bin/webapp github.com/scottyc/webapp
-
+RUN CGO_ENABLED=0 GOOS=linux go build -o webapp .
 
 FROM alpine:3.8
-RUN apk add --update vim && \
-    rm -rf /var/cache/apk/* && \
-    mkdir -p /web/static/ 
-
-COPY --from=build /go/src/github.com/scottyc/webapp/bin/webapp /usr/bin
-COPY index.html /web/static/index.html
 
 WORKDIR /web
 
+COPY --from=build /app/webapp /usr/bin/webapp
+COPY index.html /web/static/index.html
+
 EXPOSE 3000
 
-ENTRYPOINT webapp
+ENTRYPOINT ["/usr/bin/webapp"]
